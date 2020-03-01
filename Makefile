@@ -206,6 +206,20 @@ proto-lint:
 	 echo done >&2 && exit $$EXIT
 
 
+# Goreleaser:
+.PHONY: release release-snapshot
+
+__RELEASE = goreleaser release --rm-dist
+
+release:
+	@echo 'Releasing with Goreleaser...' >&2 && \
+	 $(__RELEASE)
+
+release-snapshot:
+	@echo 'Releasing snapshot with Goreleaser...' >&2 && \
+	 $(__RELEASE) --snapshot
+
+
 # Apollo:
 .PHONY: apollo-push
 

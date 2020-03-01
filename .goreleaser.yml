@@ -1,0 +1,88 @@
+# Scripts to run before anything else..
+before:
+  hooks:
+    - make install
+    # If Go code needs to be generated:
+    # - go generate ./...
+
+## Configure how the binaries are built.
+builds:
+  - binary: warriorrec
+    dir: ./cmd/warriorrec
+    env:
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+    goos:
+      - windows
+      - darwin
+      - linux
+    ldflags:
+      - "-X go.stevenxie.me/{{ .ProjectName }}/internal.Version={{.Version}}"
+
+
+# Create an archive with built binaries and the README, license, etc.
+archives:
+  - name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    wrap_in_directory: true
+
+    replacements:
+      darwin: macOS
+      linux: linux
+      windows: win
+      i386: 386
+      amd64: x86_64
+
+    # Pack archive in 'tar.gz' for Linux.
+    format: "zip"
+    format_overrides:
+      - goos: linux
+        format: tar.gz
+
+    files:
+      - LICENSE*
+      - README*
+
+# Create a checksums file to allow verifying the integrity of the downloads.
+checksum:
+  name_template: checksums.txt
+
+# Generate a changelog using recent commits.
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+# Create a project snapshot without releasing.
+snapshot:
+  name_template: "{{.ShortCommit}}-SNAPSHOT"
+
+# Release to Github Releases.
+release:
+  name_template: "{{.ProjectName}}-{{.Tag}}"
+
+# Release to Homebrew.
+brews:
+    # Formula information:
+  - description: A CLI tool for getting Warrior Recreation schedules.
+    homepage: https://github.com/stevenxie/warriorrec
+
+    ## Custom install / test scripts:
+    install: |
+      bin.install "warriorrec"
+    test: warriorrec --version
+
+    ## Brew tap information:
+    github:
+      owner: stevenxie
+      name: homebrew-tap
+
+    # Git author used to commit to the repository.
+    # Defaults are shown.
+    commit_author:
+      name: goreleaser-bot
+      email: dev@stevenxie.me
+
+    ## Where to put formula inside tap repository.
+    folder: Formula
